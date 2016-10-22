@@ -171,11 +171,9 @@ class tree {
             shared_ptr<node> sub(new node());
             sub->op = NOT;
             sub->left = negetion();
-            next_token();
             return sub;
         } else if (cur_token == BRACKET) {
             shared_ptr<node> sub = expr();
-            next_token();
             next_token();
             return sub;
         }
