@@ -100,8 +100,8 @@ class tree {
             string tmp;
             while ((pos < expression.length()) &&
                    (('A' <= expression[pos] && expression[pos] <= 'Z') ||
-                    ('a' <= expression[pos] && expression[pos] <= 'z')
-                    || ('0' <= expression[pos] && expression[pos] <= '9'))) {
+                    ('a' <= expression[pos] && expression[pos] <= 'z') ||
+                    ('0' <= expression[pos] && expression[pos] <= '9'))) {
                 cur_token = VARIABLE;
                 tmp += expression[pos];
                 pos++;
