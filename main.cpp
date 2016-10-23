@@ -191,22 +191,23 @@ public:
 };
 
 
-vector<string> assumptions;
-string all_fun_is_for;
+
+vector<string> string_axioms = {"a->b->a",
+                                "(a->b)->(a->b->c)->(a->c)",
+                                "a->b->a&b",
+                                "a&b->a",
+                                "a&b->b",
+                                "a->a|b",
+                                "b->a|b",
+                                "(a->c)->(b->c)->(a|b->c)",
+                                "(a->b)->(a->!b)->!a",
+                                "!!a->a"};
 
 class checker {
-    vector<string> string_axioms = {"a->b->a",
-                                    "(a->b)->(a->b->c)->(a->c)",
-                                    "a->b->a&b",
-                                    "a&b->a",
-                                    "a&b->b",
-                                    "a->a|b",
-                                    "b->a|b",
-                                    "(a->c)->(b->c)->(a|b->c)",
-                                    "(a->b)->(a->!b)->!a",
-                                    "!!a->a"};
-
     vector<shared_ptr<node>> axioms;
+    vector<string> assumptions;
+    string all_fun_is_for;
+
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
         if (v->left == nullptr && (v->right == nullptr)) {
             return u->left == nullptr && u->right == nullptr;
@@ -267,20 +268,41 @@ class checker {
     unordered_multimap<string, int> right_impl; //right gay in every tree with impl in root TO number of line
     unordered_map<int, string> left_impl; //number of line TO left gay of every tree with impl in root
     int line; //for counting lines
+    string annotation_st;
 
 public:
 
-
-    checker() : line(1) {
+    checker() : line(0) {
         parser p;
         for (auto u: string_axioms) {
             axioms.push_back(p.parse(u));
         }
     }
 
+    checker(string s) : line(0) {
+        parser p;
+        for (auto u: string_axioms) {
+            axioms.push_back(p.parse(u));
+        }
+        string tmp("");
+        for (size_t i = 0; i < s.length(); i++) {
+            if (s[i] == ' ') {
+                continue;
+            } else if (s[i] != ',' && !(s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) {
+                tmp += s[i];
+            } else {
+                assumptions.push_back(p.parse(tmp)->expression);
+                tmp = "";
+                if ((s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) i++;
+            }
+        }
+        all_fun_is_for = p.parse(tmp)->expression;
+    }
+
     bool check_axioms(shared_ptr<node> root) {
-        for (shared_ptr<node> u: axioms) {
-            if (cur_axiom(u, root)) {
+        for (size_t i = 0; i < axioms.size(); i++) {
+            if (cur_axiom(axioms[i], root)) {
+                annotation_st = "Сх. акс. " + to_string(i + 1);
                 return true;
             }
         }
@@ -289,8 +311,11 @@ public:
 
     bool check_assumtions(shared_ptr<node> root) {
         string k = root->expression;
-        for (auto u: assumptions) {
-            if (u == k) return true;
+        for (size_t i = 0; i < assumptions.size(); i++) {
+            if (assumptions[i] == k) {
+                annotation_st = "Предп. " + to_string(i + 1);
+                return true;
+            }
         }
         return false;
     }
@@ -303,55 +328,58 @@ public:
         for (auto it = beg_end.first; it != beg_end.second; it++) {
             int number_of_line = it->second;
             string left = left_impl.find(number_of_line)->second;
-            if (all_we_have.count(left)) return true;
+            auto it_number_second_line = all_we_have.find(left);
+            if (it_number_second_line != all_we_have.end()) {
+                int gg = it_number_second_line->second;
+                if (number_of_line > gg) {
+                    swap(number_of_line, gg);
+                }
+                annotation_st = "M.P. " + to_string(number_of_line) + " " + to_string(gg);
+                return true;
+            }
         }
         return false;
     }
 
     bool check(shared_ptr<node> root) {
+        line++;
         if (check_axioms(root) || check_assumtions(root) || check_MP(root)) {
             all_we_have.insert(make_pair(root->expression, line));
             if (root->op == IMPL) {
                 left_impl.insert(make_pair(line, root->left->expression));
                 right_impl.insert(make_pair(root->right->expression, line));
             }
-            line++;
             return true;
         }
+        annotation_st = "Не доказано";
         return false;
+    }
+
+    string get_annotation() {
+        return annotation_st;
+    }
+
+    int get_line_number() {
+        return line;
     }
 
 };
 
-void assumptions_go(parser &p, string &s) {
-    string tmp("");
-    for (size_t i = 0; i < s.length(); i++) {
-        if (s[i] == ' ') {
-            continue;
-        } else if (s[i] != ',' && !(s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) {
-            tmp += s[i];
-        } else {
-            assumptions.push_back(p.parse(tmp)->expression);
-            tmp = "";
-            if ((s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) i++;
-        }
-    }
-    all_fun_is_for = p.parse(tmp)->expression;
-}
 
 int main() {
     freopen("in.txt", "r", stdin);
     freopen("out.txt", "w", stdout);
+    setlocale(LC_ALL, "Russian");
     string s;
     getline(cin, s);
+    cout << s << endl;
     parser p;
 
-    assumptions_go(p, s);
-
-    checker ch;
+    checker ch(s);
 
     while (getline(cin, s)) {
-        cout << ch.check(p.parse(s)) << endl;
+        ch.check(p.parse(s));
+        printf("(%d) %s (%s)\n", ch.get_line_number(), s.data(), ch.get_annotation().data());
     }
 
 
