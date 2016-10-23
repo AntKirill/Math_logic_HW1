@@ -190,16 +190,16 @@ public:
     }
 };
 
-vector<string> string_axioms = { "a->b->a",
-                          "(a->b)->(a->b->c)->(a->c)",
-                          "a->b->a&b",
-                          "a&b->a",
-                          "a&b->b",
-                          "a->a|b",
-                          "b->a|b",
-                          "(a->c)->(b->c)->(a|b->c)",
-                          "(a->b)->(a->!b)->!a",
-                          "!!a->a"};
+vector<string> string_axioms = {"a->b->a",
+                                "(a->b)->(a->b->c)->(a->c)",
+                                "a->b->a&b",
+                                "a&b->a",
+                                "a&b->b",
+                                "a->a|b",
+                                "b->a|b",
+                                "(a->c)->(b->c)->(a|b->c)",
+                                "(a->b)->(a->!b)->!a",
+                                "!!a->a"};
 
 vector<shared_ptr<node>> axioms;
 vector<string> assumptions;
@@ -235,7 +235,7 @@ class checker {
         queue<shared_ptr<node>> qax, q;
         qax.push(u);
         q.push(root);
-        while (!qax.empty()){
+        while (!qax.empty()) {
             shared_ptr<node> vax = qax.front();
             qax.pop();
             shared_ptr<node> v = q.front();
@@ -262,7 +262,16 @@ class checker {
         return true;
     }
 
+    unordered_map<string, int> all_we_have; //every expression TO number of line
+    unordered_multimap<string, int> right_impl; //right gay in every tree with impl in root TO number of line
+    unordered_map<int, string> left_impl; //number of line TO left gay of every tree with impl in root
+    int line; //for counting lines
+
 public:
+
+
+    checker() : line(1) { }
+
     bool check_axioms(shared_ptr<node> root) {
         for (shared_ptr<node> u: axioms) {
             if (cur_axiom(u, root)) {
@@ -280,11 +289,37 @@ public:
         return false;
     }
 
+
+    bool check_MP(shared_ptr<node> root) {
+        string k = root->expression;
+        pair<std::unordered_multimap<string, int>::iterator, std::unordered_multimap<string, int>::iterator>
+                beg_end = right_impl.equal_range(root->expression);
+        for (auto it = beg_end.first; it != beg_end.second; it++) {
+            int number_of_line = it->second;
+            string left = left_impl.find(number_of_line)->second;
+            if (all_we_have.count(left)) return true;
+        }
+        return false;
+    }
+
+    bool check(shared_ptr<node> root) {
+        if (check_axioms(root) || check_assumtions(root) || check_MP(root)) {
+            all_we_have.insert(make_pair(root->expression, line));
+            if (root->op == IMPL) {
+                left_impl.insert(make_pair(line, root->left->expression));
+                right_impl.insert(make_pair(root->right->expression, line));
+            }
+            line++;
+            return true;
+        }
+        return false;
+    }
+
 };
 
 void assumptions_go(parser &p, string &s) {
     string tmp("");
-    for (size_t i = 0; i < s.length() ; i++) {
+    for (size_t i = 0; i < s.length(); i++) {
         if (s[i] == ' ') {
             continue;
         } else if (s[i] != ',' && !(s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) {
