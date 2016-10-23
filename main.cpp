@@ -203,6 +203,7 @@ vector<string> string_axioms = { "a->b->a",
 
 vector<shared_ptr<node>> axioms;
 vector<string> assumptions;
+string all_fun_is_for;
 
 class checker {
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
@@ -277,15 +278,35 @@ public:
 
 };
 
+void assumptions_go(parser &p, string &s) {
+    string tmp("");
+    for (size_t i = 0; i < s.length() ; i++) {
+        if (s[i] == ' ') {
+            continue;
+        } else if (s[i] != ',' && !(s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) {
+            tmp += s[i];
+        } else {
+            assumptions.push_back(p.parse(tmp)->expression);
+            tmp = "";
+            if ((s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) i++;
+        }
+    }
+    all_fun_is_for = p.parse(tmp)->expression;
+}
 
 int main() {
     freopen("in.txt", "r", stdin);
     freopen("out.txt", "w", stdout);
     string s;
     getline(cin, s);
-
     parser p;
 
+    assumptions_go(p, s);
+
+    for (auto u: assumptions) {
+        cout << u << endl;
+    }
+    cout << all_fun_is_for;
 
 
     return 0;
