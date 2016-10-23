@@ -376,7 +376,6 @@ int main() {
     string s;
     getline(cin, s);
     parser p;
-
     assumptions_go(p, s);
 
     checker ch;
