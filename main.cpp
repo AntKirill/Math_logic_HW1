@@ -19,45 +19,13 @@ struct node {
 
     node() : left(nullptr), right(nullptr) { }
 
-    string to_string(shared_ptr<node> u) {
-        string ul(""), ur("");
-        if (u->left != nullptr) {
-            ul = to_string(u->left);
-        }
-        if (u->right != nullptr) {
-            ur = to_string(u->right);
-        }
-        string sign;
-        switch (u->op) {
-            case IMPL:
-                sign = "->";
-                break;
-            case OR:
-                sign = "|";
-                break;
-            case AND:
-                sign = "&";
-                break;
-            case NOT:
-                sign = "!";
-                break;
-            default:
-                break;
-        }
-        if (ur != "") {
-            u->expression = "(" + ul + sign + ur + ")";
-        } else if (ul != "") {
-            u->expression = "(!" + ul + ')';
-        }
-        return u->expression;
-    }
 };
 
 
-class tree {
+class parser {
 
-    const std::string expression;
-    size_t pos = 0;
+    std::string expression;
+    size_t pos;
     token cur_token;
     operation_type cur_operation_type;
     string cur_variable;
@@ -180,15 +148,62 @@ class tree {
         return nullptr;
     }
 
-public:
-
-    tree(const std::string &expression) : expression(expression) { }
-
-    shared_ptr<node> parse() {
-        return expr();
+    static string to_string(shared_ptr<node> u) {
+        string ul(""), ur("");
+        if (u->left != nullptr) {
+            ul = to_string(u->left);
+        }
+        if (u->right != nullptr) {
+            ur = to_string(u->right);
+        }
+        string sign;
+        switch (u->op) {
+            case IMPL:
+                sign = "->";
+                break;
+            case OR:
+                sign = "|";
+                break;
+            case AND:
+                sign = "&";
+                break;
+            case NOT:
+                sign = "!";
+                break;
+            default:
+                break;
+        }
+        if (ur != "") {
+            u->expression = "(" + ul + sign + ur + ")";
+        } else if (ul != "") {
+            u->expression = "(!" + ul + ")";
+        }
+        return u->expression;
     }
 
+public:
+
+    shared_ptr<node> parse(string &expression) {
+        this->expression = expression;
+        pos = 0;
+        shared_ptr<node> root = expr();
+        to_string(root);
+        return root;
+    }
 };
+
+vector<string> string_axioms = { "a->b->a",
+                          "(a->b)->(a->b->c)->(a->c)",
+                          "a->b->a&b",
+                          "a&b->a",
+                          "a&b->b",
+                          "a->a|b",
+                          "b->a|b",
+                          "(a->c)->(b->c)->(a|b->c)",
+                          "(a->b)->(a->!b)->!a",
+                          "!!a->a"};
+
+vector<shared_ptr<node>> axioms;
 
 int main() {
     freopen("in.txt", "r", stdin);
@@ -196,11 +211,12 @@ int main() {
     string s;
     getline(cin, s);
 
-    tree p(s);
+    parser p;
 
-    shared_ptr<node> root = p.parse();
-    string st = root->to_string(root);
+    axioms.resize(string_axioms.size());
+    for (auto u: string_axioms) {
+        axioms.push_back(p.parse(u));
+    }
 
-    cout << st;
     return 0;
 }
