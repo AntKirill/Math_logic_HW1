@@ -1,2 +1,7 @@
-a->b, a->c, c->d |- ambasador -> brockuli
-lcp -> mld
+b |- b->b
+b
+c
+d
+e
+b -> b -> b
+b -> b

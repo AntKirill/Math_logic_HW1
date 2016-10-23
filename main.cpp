@@ -190,22 +190,23 @@ public:
     }
 };
 
-vector<string> string_axioms = {"a->b->a",
-                                "(a->b)->(a->b->c)->(a->c)",
-                                "a->b->a&b",
-                                "a&b->a",
-                                "a&b->b",
-                                "a->a|b",
-                                "b->a|b",
-                                "(a->c)->(b->c)->(a|b->c)",
-                                "(a->b)->(a->!b)->!a",
-                                "!!a->a"};
 
-vector<shared_ptr<node>> axioms;
 vector<string> assumptions;
 string all_fun_is_for;
 
 class checker {
+    vector<string> string_axioms = {"a->b->a",
+                                    "(a->b)->(a->b->c)->(a->c)",
+                                    "a->b->a&b",
+                                    "a&b->a",
+                                    "a&b->b",
+                                    "a->a|b",
+                                    "b->a|b",
+                                    "(a->c)->(b->c)->(a|b->c)",
+                                    "(a->b)->(a->!b)->!a",
+                                    "!!a->a"};
+
+    vector<shared_ptr<node>> axioms;
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
         if (v->left == nullptr && (v->right == nullptr)) {
             return u->left == nullptr && u->right == nullptr;
@@ -270,7 +271,12 @@ class checker {
 public:
 
 
-    checker() : line(1) { }
+    checker() : line(1) {
+        parser p;
+        for (auto u: string_axioms) {
+            axioms.push_back(p.parse(u));
+        }
+    }
 
     bool check_axioms(shared_ptr<node> root) {
         for (shared_ptr<node> u: axioms) {
@@ -343,8 +349,10 @@ int main() {
     assumptions_go(p, s);
 
     checker ch;
-    getline(cin, s);
-    cout << ch.check_assumtions(p.parse(s));
+
+    while (getline(cin, s)) {
+        cout << ch.check(p.parse(s)) << endl;
+    }
 
 
     return 0;
