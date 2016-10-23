@@ -203,10 +203,11 @@ vector<string> string_axioms = {"a->b->a",
                                 "(a->b)->(a->!b)->!a",
                                 "!!a->a"};
 
+vector<string> assumptions;
+string all_fun_is_for;
+
 class checker {
     vector<shared_ptr<node>> axioms;
-    vector<string> assumptions;
-    string all_fun_is_for;
 
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
         if (v->left == nullptr && (v->right == nullptr)) {
@@ -279,26 +280,6 @@ public:
         }
     }
 
-    checker(string s) : line(0) {
-        parser p;
-        for (auto u: string_axioms) {
-            axioms.push_back(p.parse(u));
-        }
-        string tmp("");
-        for (size_t i = 0; i < s.length(); i++) {
-            if (s[i] == ' ') {
-                continue;
-            } else if (s[i] != ',' && !(s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) {
-                tmp += s[i];
-            } else {
-                assumptions.push_back(p.parse(tmp)->expression);
-                tmp = "";
-                if ((s[i] == '|' && (i + 1 < s.length()) && s[i + 1] == '-')) i++;
-            }
-        }
-        all_fun_is_for = p.parse(tmp)->expression;
-    }
-
     bool check_axioms(shared_ptr<node> root) {
         for (size_t i = 0; i < axioms.size(); i++) {
             if (cur_axiom(axioms[i], root)) {
@@ -365,22 +346,49 @@ public:
 
 };
 
+void assumptions_go(parser &p, string &s) {
+    string tmp("");
+    s += ' ';
+    for (size_t i = 0; i < s.length() - 1; i++) {
+        if (s[i] == ' ') {
+            continue;
+        } else if (s[i] != ',' && !(s[i] == '|' && s[i + 1] == '-')) {
+            tmp += s[i];
+        } else {
+            if (tmp != "") {
+                assumptions.push_back(p.parse(tmp)->expression);
+                tmp = "";
+            }
+            if ((s[i] == '|' && s[i + 1] == '-')) i++;
+        }
+    }
+    if (tmp != "") {
+        all_fun_is_for = p.parse(tmp)->expression;
+    }
+}
 
 int main() {
-    freopen("in.txt", "r", stdin);
+    freopen("wrong5.in", "r", stdin);
     freopen("out.txt", "w", stdout);
     setlocale(LC_ALL, "Russian");
+    time(0);
+    clock_t t_beg = clock();
     string s;
     getline(cin, s);
-    cout << s << endl;
     parser p;
 
-    checker ch(s);
+    assumptions_go(p, s);
 
+    checker ch;
+
+    cout << s << endl;
     while (getline(cin, s)) {
         ch.check(p.parse(s));
         printf("(%d) %s (%s)\n", ch.get_line_number(), s.data(), ch.get_annotation().data());
     }
+
+    clock_t t_end = clock();
+    //cout<< t_end - t_beg;
 
 
     return 0;
