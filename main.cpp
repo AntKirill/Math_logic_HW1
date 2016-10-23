@@ -18,12 +18,10 @@ struct node {
     shared_ptr<node> left, right;
 
     node() : left(nullptr), right(nullptr) { }
-
 };
 
 
 class parser {
-
     std::string expression;
     size_t pos;
     token cur_token;
@@ -206,7 +204,6 @@ vector<string> string_axioms = { "a->b->a",
 vector<shared_ptr<node>> axioms;
 
 class checker {
-
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
         if (v->left == nullptr && (v->right == nullptr)) {
             return u->left == nullptr && u->right == nullptr;
@@ -271,6 +268,10 @@ public:
             }
         }
         return false;
+    }
+
+    bool check_assumtions(shared_ptr<node> root) {
+
     }
 
 };
