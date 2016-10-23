@@ -205,6 +205,77 @@ vector<string> string_axioms = { "a->b->a",
 
 vector<shared_ptr<node>> axioms;
 
+class checker {
+
+    bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
+        if (v->left == nullptr && (v->right == nullptr)) {
+            return u->left == nullptr && u->right == nullptr;
+        }
+        if (v->left == nullptr && v->right != nullptr) {
+            return u->left == nullptr && u->right != nullptr;
+        }
+        if (v->left != nullptr && v->right == nullptr) {
+            return u->left != nullptr && u->right == nullptr;
+        }
+        if (v->left != nullptr && v->right != nullptr) {
+            return u->left != nullptr && u->right != nullptr;
+        }
+        return false;
+    }
+
+    bool check_mapped_expr(unordered_map<char, string> &m, char u, string &v) {
+        if (m.count(u)) {
+            return (m[u] == v);
+        }
+        m[u] = v;
+        return true;
+    }
+
+    bool cur_axiom(shared_ptr<node> u, shared_ptr<node> root) {
+        unordered_map<char, string> exprax_to_expr;
+        queue<shared_ptr<node>> qax, q;
+        qax.push(u);
+        q.push(root);
+        while (!qax.empty()){
+            shared_ptr<node> vax = qax.front();
+            qax.pop();
+            shared_ptr<node> v = q.front();
+            q.pop();
+            if (check_nodes_structure(vax, v)) {
+                if (vax->op != v->op) return false;
+                if (vax->op == VARIABLE) {
+                    if (!check_mapped_expr(exprax_to_expr, vax->expression[0], v->expression)) return false;
+                }
+                if (vax->left != nullptr) {
+                    qax.push(vax->left);
+                    q.push(v->left);
+                }
+                if (vax->right != nullptr) {
+                    qax.push(vax->right);
+                    q.push(v->right);
+                }
+            } else {
+                if (vax->left == nullptr && vax->right == nullptr) {
+                    if (!check_mapped_expr(exprax_to_expr, vax->expression[0], v->expression)) return false;
+                } else return false;
+            }
+        }
+        return true;
+    }
+
+public:
+    bool check_axioms(shared_ptr<node> root) {
+        for (shared_ptr<node> u: axioms) {
+            if (cur_axiom(u, root)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+};
+
+
 int main() {
     freopen("in.txt", "r", stdin);
     freopen("out.txt", "w", stdout);
@@ -213,10 +284,15 @@ int main() {
 
     parser p;
 
-    axioms.resize(string_axioms.size());
+    int cnt = 0;
     for (auto u: string_axioms) {
         axioms.push_back(p.parse(u));
     }
+
+    checker ch;
+
+    cout << ch.check_axioms(p.parse(s)) << endl;
+
 
     return 0;
 }
