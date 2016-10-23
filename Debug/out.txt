@@ -1,4 +1,1 @@
-(a->b)
-(a->c)
-(c->d)
-(ambasador->brockuli)
+0

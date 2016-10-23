@@ -273,7 +273,11 @@ public:
     }
 
     bool check_assumtions(shared_ptr<node> root) {
-
+        string k = root->expression;
+        for (auto u: assumptions) {
+            if (u == k) return true;
+        }
+        return false;
     }
 
 };
@@ -303,10 +307,9 @@ int main() {
 
     assumptions_go(p, s);
 
-    for (auto u: assumptions) {
-        cout << u << endl;
-    }
-    cout << all_fun_is_for;
+    checker ch;
+    getline(cin, s);
+    cout << ch.check_assumtions(p.parse(s));
 
 
     return 0;
