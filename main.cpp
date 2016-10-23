@@ -311,11 +311,7 @@ public:
             string left = left_impl.find(number_of_line)->second;
             auto it_number_second_line = all_we_have.find(left);
             if (it_number_second_line != all_we_have.end()) {
-                int gg = it_number_second_line->second;
-                if (number_of_line > gg) {
-                    swap(number_of_line, gg);
-                }
-                annotation_st = "M.P. " + to_string(number_of_line) + " " + to_string(gg);
+                annotation_st = "M.P. " + to_string(it_number_second_line->second) + " " + to_string(number_of_line);
                 return true;
             }
         }
@@ -368,7 +364,7 @@ void assumptions_go(parser &p, string &s) {
 }
 
 int main() {
-    freopen("wrong5.in", "r", stdin);
+    freopen("good6.in", "r", stdin);
     freopen("out.txt", "w", stdout);
     setlocale(LC_ALL, "Russian");
     time(0);
