@@ -202,6 +202,7 @@ vector<string> string_axioms = { "a->b->a",
                           "!!a->a"};
 
 vector<shared_ptr<node>> axioms;
+vector<string> assumptions;
 
 class checker {
     bool check_nodes_structure(shared_ptr<node> v, shared_ptr<node> u) {
@@ -285,14 +286,6 @@ int main() {
 
     parser p;
 
-    int cnt = 0;
-    for (auto u: string_axioms) {
-        axioms.push_back(p.parse(u));
-    }
-
-    checker ch;
-
-    cout << ch.check_axioms(p.parse(s)) << endl;
 
 
     return 0;
