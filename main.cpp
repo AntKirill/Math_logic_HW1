@@ -191,7 +191,6 @@ public:
 };
 
 
-
 vector<string> string_axioms = {"a->b->a",
                                 "(a->b)->(a->b->c)->(a->c)",
                                 "a->b->a&b",
@@ -266,8 +265,8 @@ class checker {
     }
 
     unordered_map<string, int> all_we_have; //every expression TO number of line
-    unordered_multimap<string, int> right_impl; //right gay in every tree with impl in root TO number of line
-    unordered_map<int, string> left_impl; //number of line TO left gay of every tree with impl in root
+    unordered_multimap<string, int> right_impl; //right node's expr in every tree with impl in root TO number of line
+    unordered_map<int, string> left_impl; //number of line TO left node's expr of every tree with impl in root
     int line; //for counting lines
     string annotation_st;
 
@@ -383,7 +382,7 @@ int main() {
     }
 
     clock_t t_end = clock();
-    //cout<< t_end - t_beg;
+    //cout << t_end - t_beg;
 
 
     return 0;
